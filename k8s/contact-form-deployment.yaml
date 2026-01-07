@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: contact-form
+  name: contact-form
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: contact-form
+  template:
+    metadata:
+      labels:
+        io.kompose.service: contact-form
+    spec:
+      containers:
+        - env:
+            - name: webhook
+              value: "webhook"
+          image: markokroselj/discord-contact-form
+          name: discord-contact-form
+          ports:
+            - containerPort: 5000
+              protocol: TCP
+      restartPolicy: Always
