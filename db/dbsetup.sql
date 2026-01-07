@@ -1,0 +1,60 @@
+/*==============================================================*/
+/* DBMS name:      MySQL 5.0                                    */
+/* Created on:     27. 10. 2025 21:29:55                        */
+/*==============================================================*/
+
+/*CREATE DATABASE vehicles_db;*/
+USE vehicles_db;
+
+
+drop table if exists Vehicle;
+
+drop table if exists Type;
+
+drop table if exists Location;
+
+
+/*==============================================================*/
+/* Table: Location                                              */
+/*==============================================================*/
+create table Location
+(
+   Location_ID          int not null auto_increment,
+   Location_name        varchar(100),
+   Location_link        VARCHAR(2048),
+   primary key (Location_ID)
+);
+
+/*==============================================================*/
+/* Table: Type                                                  */
+/*==============================================================*/
+create table Type
+(
+   Type_ID              int not null auto_increment,
+   Type                 varchar(25),
+   primary key (Type_ID)
+);
+
+/*==============================================================*/
+/* Table: Vehicle                                               */
+/*==============================================================*/
+create table Vehicle
+(
+   Vehicle_ID           int not null auto_increment,
+   Location_ID          int not null,
+   Type_ID              int not null,
+   Name                 varchar(20),
+   primary key (Vehicle_ID)
+);
+
+alter table Vehicle add constraint FK_is foreign key (Type_ID)
+      references Type (Type_ID) on delete restrict on update restrict;
+
+alter table Vehicle add constraint FK_is_at foreign key (Location_ID)
+      references Location (Location_ID) on delete restrict on update restrict;
+      
+/*Insert initial types and locations */     
+insert into Type (Type) values ('Ship'), ('Booster');
+insert into Location (Location_name, Location_link) values ('Production Site', 'https://www.openstreetmap.org/export/embed.html?bbox=-97.189444%2C25.985445%2C-97.187444%2C25.987445&layer=mapnik&marker=25.986445%2C-97.188444'),
+ ('Launch Site', 'https://www.openstreetmap.org/export/embed.html?bbox=-97.157568%2C25.996227%2C-97.155568%2C25.998227&layer=mapnik&marker=25.997227%2C-97.156568'),
+ ("Massey's Test Site", "https://www.openstreetmap.org/export/embed.html?bbox=-97.252483%2C25.948462%2C-97.248483%2C25.952462&layer=mapnik&marker=25.950462%2C-97.250483");
