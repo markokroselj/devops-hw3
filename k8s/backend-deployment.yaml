@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: backend
+  name: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: backend
+  template:
+    metadata:
+      labels:
+        io.kompose.service: backend
+    spec:
+      containers:
+        - env:
+            - name: APP_PORT
+              value: "3000"
+            - name: DB_HOST
+              value: db
+            - name: DB_PASSWORD_FILE
+              value: /run/secrets/mariadb-pwd
+            - name: DB_USERNAME
+              value: appUser
+          image: markokroselj/backend:1.0.0
+          name: backend
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /run/secrets
+              name: mariadb-pwd
+              subPath: mariadb-pwd
+      restartPolicy: Always
+      volumes:
+        - name: mariadb-pwd
+          secret:
+            items:
+              - key: mariadb-pwd
+                path: mariadb-pwd
+            secretName: mariadb-pwd
