@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: db
+  name: db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: db
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.service: db
+    spec:
+      containers:
+        - env:
+            - name: MARIADB_DATABASE
+              value: vehicles_db
+            - name: MARIADB_PASSWORD_FILE
+              value: /run/secrets/mariadb-pwd
+            - name: MARIADB_RANDOM_ROOT_PASSWORD
+              value: "1"
+            - name: MARIADB_USER
+              value: appUser
+          image: mariadb:11.8.5-ubi
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - 'mariadb-admin ping -h 127.0.0.1 -u appUser -p"$(cat /run/secrets/mariadb-pwd)"'
+            failureThreshold: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+          name: mariadb
+          ports:
+            - containerPort: 3306
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /run/secrets
+              name: mariadb-pwd
+              subPath: mariadb-pwd
+            - mountPath: /var/lib/mysql
+              name: db-data
+            - mountPath: /docker-entrypoint-initdb.d/init.sql
+              name: db-cm1
+              readOnly: true
+              subPath: init.sql
+      restartPolicy: Always
+      volumes:
+        - name: mariadb-pwd
+          secret:
+            items:
+              - key: mariadb-pwd
+                path: mariadb-pwd
+            secretName: mariadb-pwd
+        - name: db-data
+          persistentVolumeClaim:
+            claimName: db-data
+        - configMap:
+            items:
+              - key: dbsetup.sql
+                path: init.sql
+            name: db-cm1
+          name: db-cm1
