@@ -30,7 +30,7 @@ spec:
               service:
                 name: contact-form
                 port:
-                  number: 5000
+                  number: 80
 
           - path: /?(.*)
             pathType: Prefix

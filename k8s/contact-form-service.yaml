@@ -6,9 +6,9 @@ metadata:
   name: contact-form
 spec:
   ports:
-    - name: "5000"
-      port: 5000
-      targetPort: 5000
+    - name: "80"
+      port: 80
+      targetPort: 80
       protocol: TCP
   selector:
     io.kompose.service: contact-form
