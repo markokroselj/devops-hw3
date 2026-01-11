@@ -7,7 +7,7 @@ const fs = require('fs');
 const sequelize = new Sequelize(
   "vehicles_db",
   process.env.DB_USERNAME,
- fs.readFileSync(process.env.DB_PASSWORD_FILE, 'utf8').trim(),
+  process.env.DB_PASSWORD,
   {
     host: process.env.DB_HOST,
     dialect: "mysql",
