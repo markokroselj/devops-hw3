@@ -57,8 +57,6 @@ Application stack was deployed on virtual machine server running Ubuntu 24.04.3.
 9. Change domain name to yours inside ``ingress.yaml``
 10. Change email inside ``issuers.yaml``
 11. Create secret for database
-    ```bash
-        kubectl create secret generic mariadb-pwd \
-  --from-literal=mariadb-pwd=yourpassword
-  ```
+    ``kubectl create secret generic mariadb-pwd \
+  --from-literal=mariadb-pwd=yourpassword``
 12. Apply Kubernetes files ``sudo microk8s kubectl apply -f k8s/``
