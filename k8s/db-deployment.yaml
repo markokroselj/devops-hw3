@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: db
   labels:
     io.kompose.service: db
-  name: db
 spec:
   replicas: 1
   selector:
@@ -17,51 +17,53 @@ spec:
         io.kompose.service: db
     spec:
       containers:
-        env:
-        - name: MARIADB_DATABASE
-          value: vehicles_db
-        - name: MARIADB_USER
-          value: appUser
-        - name: MARIADB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mariadb-pwd
-              key: mariadb-pwd
-        - name: MARIADB_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mariadb-pwd
-              key: mariadb-pwd
-
+        - name: mariadb
           image: mariadb:11.8.5-ubi
+          ports:
+            - containerPort: 3306
+
+          env:
+            - name: MARIADB_DATABASE
+              value: vehicles_db
+            - name: MARIADB_USER
+              value: appUser
+            - name: MARIADB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-pwd
+                  key: mariadb-pwd
+            - name: MARIADB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-pwd
+                  key: mariadb-pwd
+
+          volumeMounts:
+            - name: db-data
+              mountPath: /var/lib/mysql
+            - name: db-cm1
+              mountPath: /docker-entrypoint-initdb.d/init.sql
+              subPath: init.sql
+              readOnly: true
+
           livenessProbe:
             exec:
               command:
                 - sh
                 - -c
-                - 'mariadb-admin ping -h 127.0.0.1 -u appUser -p"$(cat /run/secrets/mariadb-pwd)"'
-            failureThreshold: 10
-            periodSeconds: 5
-            timeoutSeconds: 3
-          name: mariadb
-          ports:
-            - containerPort: 3306
-              protocol: TCP
-          volumeMounts:
-            - mountPath: /var/lib/mysql
-              name: db-data
-            - mountPath: /docker-entrypoint-initdb.d/init.sql
-              name: db-cm1
-              readOnly: true
-              subPath: init.sql
-      restartPolicy: Always
+                - mariadb-admin ping -h 127.0.0.1 -u appUser -p"$MARIADB_PASSWORD"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+
       volumes:
         - name: db-data
           persistentVolumeClaim:
             claimName: db-data
-        - configMap:
+        - name: db-cm1
+          configMap:
+            name: db-cm1
             items:
               - key: dbsetup.sql
                 path: init.sql
-            name: db-cm1
-          name: db-cm1
